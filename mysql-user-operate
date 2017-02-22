@@ -1,0 +1,18 @@
+mysql-用户操作（添加用户/删除用户/修改密码/数据库创建删除等）
+一、添加用户：　　①登陆mysql：　　　　@>mysql -u root -p　　　　@>密码　　②创建用户：　　　　mysql> insert into mysql.user(Host,User,Password) values("localhost","xu",password("test1234"));　　　　这样就创建了一个名为：xu 密码为：test1234 的用户。　　　　注意：此处的"localhost"，是指该用户只能在本地登录，不能在另外一台机器上远程登录。如果想远程登录的话，将"localhost"改为"%"，表示在任何一台电脑上都可以登　　录。也可以指定某台机器可以远程登录。　　③然后登录一下：　　　　mysql>exit;　　　　@>mysql -u xu -p　　　　@>输入密码　　　　mysql>登录成功二、为用户授权　　授权格式：grant 权限 on 数据库.* to 用户名@登录主机 identified by "密码";　　①登录MYSQL（有ROOT权限），这里以ROOT身份登录：　　　　@>mysql -u root -p
+　　　　@>密码　　②首先为用户创建一个数据库(testDB)：　　　　mysql>create database testDB;　　③授权test用户拥有testDB数据库的所有权限（某个数据库的所有权限）：　　　　mysql>grant all privileges on testDB.* to xu@localhost identified by 'test1234';
+　　　　mysql>flush privileges;//刷新系统权限表　　格式：grant 权限 on 数据库.* to 用户名@登录主机 identified by "密码";　　④如果想指定部分权限给一用户，可以这样来写:　　　　mysql>grant select,update on testDB.* to xu@localhost identified by '1234';
+　　　　mysql>flush privileges; //刷新系统权限表　　⑤授权test用户拥有所有数据库的某些权限：　　　　mysql>grant select,delete,update,create,drop on *.* to xu@"%" identified by "test1234";　　　　//test用户对所有数据库都有select,delete,update,create,drop 权限。　　　　//@"%" 表示对所有非本地主机授权，不包括localhost。（localhost地址设为127.0.0.1，如果设为真实的本地地址，不知道是否可以，没有验证。）　　　　//对localhost授权：加上一句grant all privileges on testDB.* to test@localhost identified by 'test1234';即可。 三、删除用户：　　@>mysql -u root -p　　@>密码 　　mysql>Delete FROM user Where User='xu' and Host='localhost'; 　　mysql>flush privileges; 　　mysql>drop database testDB; //删除用户的数据库　　删除账户及权限：>drop user 用户名@'%';　　　　　　　　　　>drop user 用户名@ localhost; 四、修改指定用户密码：　　方法1： 用SET PASSWORD命令
+　　　　mysql -u root
+　　　　mysql> SET PASSWORD FOR 'root'@'localhost' = PASSWORD('新密码');　　方法2：用mysqladmin
+　　　　mysqladmin -u root password "新密码"
+　　　　如果root已经设置过密码，采用如下方法
+　　　　mysqladmin -u root password oldpass "新密码"
+　　　　mysql -u root
+　　　　mysql> use mysql;
+　　　　mysql> UPDATE user SET Password = PASSWORD('新密码') WHERE user = 'root';
+　　　　mysql> FLUSH PRIVILEGES;　　在丢失root密码的时候，可以这样
+　　　　mysqld_safe --skip-grant-tables&
+　　　　mysql -u root mysql
+　　　　mysql> UPDATE user SET password=PASSWORD("新密码") WHERE user='root';
+　　　　mysql> FLUSH PRIVILEGES;五、列出所有数据库：　　mysql>show database;六、切换数据库：　　mysql>use '数据库名';七、列出所有表：　　mysql>show tables;八、显示数据表结构：　　mysql>describe 表名;九、删除数据库和数据表　　mysql>drop database 数据库名;　　mysql>drop table 数据表名; 　　
